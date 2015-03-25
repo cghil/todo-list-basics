@@ -33,7 +33,7 @@ var TodoList = Backbone.Collection({
 			return 1;
 		}
 		return this.last().get('order') + 1
-	}
+	},
 
 	// Todos are soted by their original insertion order
 
