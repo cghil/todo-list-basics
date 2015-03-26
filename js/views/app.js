@@ -19,10 +19,20 @@ app.AppView = Backbone.View.extend({
 	el: '#todoapp',
 
 	// Our template for the line of statistics at the bottom of the app.
-	// at initialization we bind the relevant events on the 'Todos'
-	// loading any preexisting todos that might be saved in *localstorage*
+
 	statsTemplate: _.template($('#stats-template').html() ),
 
+	// new
+	// delegated events for creatin new items, and clearing completed ones
+	events: {
+		'keypress #new-todo': 'createOnEnter',
+		'click #clear-completed': 'clearCompleted',
+		'click #toggle-all': 'toggleAllComplete'
+	},
+
+	// events: the events hash now contains callbacks for our DOM events. It binds those events to the following methods
+	// at initialization we bind the relevant events on the 'Todos'
+	// loading any preexisting todos that might be saved in *localstorage*
 	initialize: function(){
 		this.allCheckbox = this.$('#toggle-all')[0];
 		this.$input = this.$('#new-todo'); // $(view.el).find(selector)
@@ -34,18 +44,39 @@ app.AppView = Backbone.View.extend({
 		this.listenTo(app.Todos, 'reset', this.addAll);
 
 		// new shit
-		this.listenTo(app.Todos, 'change:completed', this.filterOne)
-		this.listenTo(app.Todos, 'filter', this.filterAll)
+		this.listenTo(app.Todos, 'change:completed', this.filterOne);
+		this.listenTo(app.Todos, 'filter', this.filterAll);
 		this.listenTo(app.Todos, 'all', this.render);
+
+		app.Todos.fetch(); 
 	},
 
-	// new
-	// delegated events for creatin new items, and clearing completed ones
-	// events: {
-	// 	'keypress #new-todo': 'createOnEnter',
-	// 	'click #clear-completed':
-	// }
+	// Re-rendering the app just means refreshing the statistics --the rest
+	// of the app doesn't change
 
+	render: function(){
+		var completed = app.Todos.completed().length; // completed: a function that finds all the completed and returns an array
+		var remaining = app.Todos.remaining().length;
+
+		if (app.Todos.length) {
+			this.$main.show();
+			this.$footer.show();
+
+			this.$footer.html(this.statsTemplate({
+				completed: completed,
+				remaining: remaining
+			}));
+
+			this.$('#filters li a')
+				.removeClass('selected')
+				.filter('href="#/' + (app.TodoFilter || '') +'"]')
+				.addClass('selected');
+		} else {
+			this.$main.hide();
+			this.$footer.hide();
+		}
+		this.allCheckbox.checked = !remaining;
+	},
 	// add a single todo item to the list by creating a view for it, and appending its element to the <'ul>'
 	addOne: function(todo) {
 		var view = new app.TodoView({ model: todo });
@@ -53,11 +84,44 @@ app.AppView = Backbone.View.extend({
 	},
 
 	addAll: function(){
-		this.$('#todo-list'),html('');
+		this.$('#todo-list').html('');
 		app.Todos.each(this.addOne, this)
+	},
+
+	filterOne: function(){
+		todo.trigger('visible');
+	},
+
+	filterAll: function() {
+		app.Todos.each(this.filterOne, this);
+	},
+	// if you hit return in the main input field, create new Todo model,
+	// persisting it to localStorage
+	createOnEnter: function(event){
+		if (event.which !== ENTER_KEY || !this.$input.val().trim()) {
+			return;
+		}
+
+		app.Todos.create( this.newAttributes() );
+		this.$input.val('')
+	},
+// clear all completed todo itesm, destroying their models
+	clearCompleted: function(){
+		_.invoke(app.Todos.completed(), 'destroy');
+		return false;
+	},
+
+	toggleAllComplete: function(){
+		var completed = this.allCheckbox.checked;
+
+		app.Todos.each(function(todo) {
+			todo.save({
+				'completed': completed
+			});
+		});
 	}
 
-})
+});
 
 // things to note.
 
