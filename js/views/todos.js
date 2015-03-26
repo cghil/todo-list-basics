@@ -31,6 +31,8 @@ app.TodoView = Backbone.View.extend({
 
 	initialize: function(){
 		this.listenTo(this.model, 'change', this.render);
+		this.listenTo(this.model, 'destroy', this.remove);
+		this.listenTo(this.model, 'visible', this.toggleVisible);
 	},
 
 	// Re-renders the titles of the todo item
@@ -40,6 +42,30 @@ app.TodoView = Backbone.View.extend({
     this.$input = this.$('.edit');
     return this;
 	},
+
+	toggleVisible: function(){
+		this.$el.toggleClass('hidden', this.isHidden());
+	},
+
+	// determines if item should be hidden //new
+	isHidden: function(){
+		var isCompleted = this.model.get('completed');
+		return( // hidden cases only
+			(!isCompleted && app.TodoFilter === 'completed') || (isCompleted && app.TodoFilter === 'active')
+		);
+	},
+
+	// Remove the item, destroy the model from localStorage and delete its view
+	clear: function(){
+		this.model.destroy();
+	},
+	
+	// toggle the completed state of the model
+	toggleCompleted: function(){
+		this.model.toggle();
+	},
+
+	//
 
 	// switch this view into 'editing' mode, displaying the input field
 	edit: function() {
