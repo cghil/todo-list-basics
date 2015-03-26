@@ -41,7 +41,7 @@
 
   <script type="text/template" id="stats-template">
     <span id="todo-count"><strong><%= remaining %></strong> <%= remaining === 1? 'item': 'items' %> left </span>
-    <ul id="filter">
+    <ul id="filters">
       <li>
         <a class="selected" href="#/">All</a>
       </li>
@@ -57,9 +57,11 @@
     <% } %>
   </script>
 
-  <script src="js/lib/jquery.min.js"></script>
-  <script src="js/lib/underscore-min.js"></script>
-  <script src="js/lib/backbone-min.js"></script>
+    <script type="text/template" id="item-template"></script>
+  <script type="text/template" id="stats-template"></script>
+  <script src="js/lib/jquery.js"></script>
+  <script src="js/lib/underscore.js"></script>
+  <script src="js/lib/backbone.js"></script>
   <script src="js/lib/backbone.localStorage.js"></script>
   <script src="js/models/todo.js"></script>
   <script src="js/collections/todos.js"></script>
