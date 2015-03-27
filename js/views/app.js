@@ -68,9 +68,9 @@ app.AppView = Backbone.View.extend({
 			}));
 
 			this.$('#filters li a')
-				.removeClass('selected')
-				.filter('href="#/' + (app.TodoFilter || '') +'"]')
-				.addClass('selected');
+	      .removeClass('selected')
+	      .filter('[href="#/' + ( app.TodoFilter || '' ) + '"]')
+	      .addClass('selected');
 		} else {
 			this.$main.hide();
 			this.$footer.hide();
@@ -88,20 +88,28 @@ app.AppView = Backbone.View.extend({
 		app.Todos.each(this.addOne, this)
 	},
 
-	filterOne: function(){
+	filterOne: function(todo){
 		todo.trigger('visible');
 	},
 
 	filterAll: function() {
 		app.Todos.each(this.filterOne, this);
 	},
+
+	newAttributes: function() {
+    return {
+      title: this.$input.val().trim(),
+      order: app.Todos.nextOrder(),
+      completed: false
+    };
+   },
+
 	// if you hit return in the main input field, create new Todo model,
 	// persisting it to localStorage
 	createOnEnter: function(event){
 		if (event.which !== ENTER_KEY || !this.$input.val().trim()) {
 			return;
 		}
-
 		app.Todos.create( this.newAttributes() );
 		this.$input.val('')
 	},
